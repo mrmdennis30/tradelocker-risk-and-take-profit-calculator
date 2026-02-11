@@ -15,10 +15,7 @@
       margin: auto;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+    h1 { text-align: center; margin-bottom: 25px; }
 
     input, select {
       width: 100%;
@@ -70,11 +67,12 @@
 
 <label>Asset</label>
 <select id="asset">
-  <option value="100">Gold (XAUUSD)</option>
-  <option value="50">Silver (XAGUSD)</option>
-  <option value="10">EURUSD / GBPUSD / AUDUSD</option>
-  <option value="9">USDJPY</option>
-  <option value="1">BTCUSD / NAS100 / US30</option>
+  <option value="XAU">Gold (XAUUSD)</option>
+  <option value="XAG">Silver (XAGUSD)</option>
+  <option value="EUR">EURUSD / Forex Majors</option>
+  <option value="NAS">NAS100</option>
+  <option value="US30">US30</option>
+  <option value="SPX">SPX500</option>
 </select>
 
 <label>Trade Direction</label>
@@ -97,41 +95,52 @@
 <div id="out" class="result"></div>
 
 <script>
+function getPointValuePerLot(asset){
+  switch(asset){
+    case 'XAU': return 100;      // 100 oz per lot → $100 per $1 move
+    case 'XAG': return 5000;     // 5,000 oz per lot → $5,000 per $1 move
+    case 'EUR': return 10;       // Standard forex pip value
+    case 'NAS': return 100;      // NAS100 contract size
+    case 'US30': return 100;     // US30 contract size
+    case 'SPX': return 100;      // SPX500 contract size
+    default: return 1;
+  }
+}
+
 function calc(){
   const bal = parseFloat(document.getElementById('balance').value);
   const risk = parseFloat(document.getElementById('risk').value);
   const entry = parseFloat(document.getElementById('entry').value);
   const sl = parseFloat(document.getElementById('sl').value);
-  const pip = parseFloat(document.getElementById('asset').value);
+  const asset = document.getElementById('asset').value;
   const r = parseFloat(document.getElementById('r').value);
 
   let dir = document.querySelector('input[name="dir"]:checked')?.value;
 
-  if(!bal || !risk || !entry || !sl || !pip || !r){
+  if(!bal || !risk || !entry || !sl || !r){
     document.getElementById('out').innerHTML = "Fill all fields.";
     return;
   }
 
-  // Auto-detect if not selected
-  if(!dir){
-    dir = entry > sl ? "BUY" : "SELL";
-  }
+  if(!dir){ dir = entry > sl ? 'BUY' : 'SELL'; }
 
+  const pointValue = getPointValuePerLot(asset);
   const riskAmt = bal * (risk/100);
   const dist = Math.abs(entry - sl);
-  const lot = riskAmt / (dist * pip);
+  const lot = riskAmt / (dist * pointValue);
 
-  const tp = dir === "BUY"
+  const tp = dir === 'BUY'
     ? entry + dist * r
     : entry - dist * r;
 
   document.getElementById('out').innerHTML =
     `<b>Trade:</b> ${dir}<br>
      <b>Risk:</b> $${riskAmt.toFixed(2)}<br>
-     <b>Lot Size:</b> ${lot.toFixed(2)}<br>
+     <b>Lot Size:</b> ${lot.toFixed(3)}<br>
      <b>Take Profit:</b> ${tp.toFixed(2)}`;
 }
 </script>
 
 </body>
 </html>
+
