@@ -1,1 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tradelocker Risk and Take Profit Calculator</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #f59e0b;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .result {
+      background: #1e293b;
+      padding: 16px;
+      margin-top: 20px;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Tradelocker Risk & TP Calculator</h1>
+
+<label>Account Balance ($)</label>
+<input id="balance" type="number" />
+
+<label>Risk % Per Trade</label>
+<input id="risk" type="number" />
+
+<label>Asset</label>
+<select id="asset" onchange="setPip()">
+  <option value="100">Gold (XAUUSD)</option>
+  <option value="10">Forex Majors</option>
+  <option value="9">JPY Pairs</option>
+  <option value="1">Crypto / Indices</option>
+</select>
+
+<label>Entry Price</label>
+<input id="entry" type="number" />
+
+<label>Stop Loss Price</label>
+<input id="sl" type="number" />
+
+<label>R Multiple</label>
+<input id="r" type="number" value="1.5" step="0.1" />
+
+<button onclick="calc()">Calculate</button>
+
+<div id="out" class="result"></div>
+
+<script>
+function setPip(){}
+
+function calc(){
+  const bal = parseFloat(balance.value);
+  const risk = parseFloat(risk.value);
+  const entry = parseFloat(entry.value);
+  const sl = parseFloat(sl.value);
+  const pip = parseFloat(asset.value);
+  const r = parseFloat(r.value);
+
+  if(!bal || !risk || !entry || !sl){
+    out.innerHTML = "Fill all fields.";
+    return;
+  }
+
+  const riskAmt = bal * (risk/100);
+  const dist = Math.abs(entry - sl);
+  const lot = riskAmt / (dist * pip);
+  const tp = entry > sl ? entry + dist*r : entry - dist*r;
+  const type = entry > sl ? "BUY" : "SELL";
+
+  out.innerHTML =
+    `<b>Trade:</b> ${type}<br>
+     <b>Risk:</b> $${riskAmt.toFixed(2)}<br>
+     <b>Lot Size:</b> ${lot.toFixed(2)}<br>
+     <b>TP:</b> ${tp.toFixed(2)}`;
+}
+</script>
+
+</body>
+</html>
 
