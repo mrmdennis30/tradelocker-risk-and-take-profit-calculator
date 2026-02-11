@@ -29,6 +29,13 @@
       font-size: 16px;
     }
 
+    .radio-group {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
     button {
       width: 100%;
       padding: 14px;
@@ -62,12 +69,19 @@
 <input id="risk" type="number" />
 
 <label>Asset</label>
-<select id="asset" onchange="setPip()">
+<select id="asset">
   <option value="100">Gold (XAUUSD)</option>
-  <option value="10">Forex Majors</option>
-  <option value="9">JPY Pairs</option>
-  <option value="1">Crypto / Indices</option>
+  <option value="50">Silver (XAGUSD)</option>
+  <option value="10">EURUSD / GBPUSD / AUDUSD</option>
+  <option value="9">USDJPY</option>
+  <option value="1">BTCUSD / NAS100 / US30</option>
 </select>
+
+<label>Trade Direction</label>
+<div class="radio-group">
+  <label><input type="radio" name="dir" value="BUY"> BUY</label>
+  <label><input type="radio" name="dir" value="SELL"> SELL</label>
+</div>
 
 <label>Entry Price</label>
 <input id="entry" type="number" />
@@ -83,35 +97,41 @@
 <div id="out" class="result"></div>
 
 <script>
-function setPip(){}
-
 function calc(){
-  const bal = parseFloat(balance.value);
-  const risk = parseFloat(risk.value);
-  const entry = parseFloat(entry.value);
-  const sl = parseFloat(sl.value);
-  const pip = parseFloat(asset.value);
-  const r = parseFloat(r.value);
+  const bal = parseFloat(document.getElementById('balance').value);
+  const risk = parseFloat(document.getElementById('risk').value);
+  const entry = parseFloat(document.getElementById('entry').value);
+  const sl = parseFloat(document.getElementById('sl').value);
+  const pip = parseFloat(document.getElementById('asset').value);
+  const r = parseFloat(document.getElementById('r').value);
 
-  if(!bal || !risk || !entry || !sl){
-    out.innerHTML = "Fill all fields.";
+  let dir = document.querySelector('input[name="dir"]:checked')?.value;
+
+  if(!bal || !risk || !entry || !sl || !pip || !r){
+    document.getElementById('out').innerHTML = "Fill all fields.";
     return;
+  }
+
+  // Auto-detect if not selected
+  if(!dir){
+    dir = entry > sl ? "BUY" : "SELL";
   }
 
   const riskAmt = bal * (risk/100);
   const dist = Math.abs(entry - sl);
   const lot = riskAmt / (dist * pip);
-  const tp = entry > sl ? entry + dist*r : entry - dist*r;
-  const type = entry > sl ? "BUY" : "SELL";
 
-  out.innerHTML =
-    `<b>Trade:</b> ${type}<br>
+  const tp = dir === "BUY"
+    ? entry + dist * r
+    : entry - dist * r;
+
+  document.getElementById('out').innerHTML =
+    `<b>Trade:</b> ${dir}<br>
      <b>Risk:</b> $${riskAmt.toFixed(2)}<br>
      <b>Lot Size:</b> ${lot.toFixed(2)}<br>
-     <b>TP:</b> ${tp.toFixed(2)}`;
+     <b>Take Profit:</b> ${tp.toFixed(2)}`;
 }
 </script>
 
 </body>
 </html>
-
